@@ -1,5 +1,6 @@
 import { NhostClientOptions } from '@nhost/nhost-js'
 
+export const isSelfHost = location.hostname.endsWith('agileinside.cloud')
 export const isLocal = location.hostname === 'localhost'
 export const isStaging = location.hostname === 'staging--rolebase.netlify.app'
 export const isShareApp = /^\/share(\/|$)/.test(location.pathname)
@@ -8,6 +9,8 @@ export default {
   // Webapp url
   url: isLocal
     ? 'http://localhost:5175'
+    : isSelfHost
+    ? 'https://rolebase.agileinside.cloud'
     : isStaging
     ? 'https://staging--rolebase.netlify.app'
     : 'https://rolebase.io',
@@ -17,12 +20,21 @@ export default {
 
   // Nhost
   nhost: {
-    subdomain: isLocal
-      ? 'local'
-      : isStaging
-      ? 'jjvdhpoooerochuiusam'
-      : 'fsudktxishllphxeibqs',
-    region: isLocal ? undefined : 'eu-central-1',
+    ...(isSelfHost
+      ? {
+          authUrl: 'https://auth.rolebase.agileinside.cloud/v1',
+          graphqlUrl: 'https://graphql.rolebase.agileinside.cloud/v1',
+          storageUrl: 'https://storage.rolebase.agileinside.cloud/v1',
+          functionsUrl: 'https://functions.rolebase.agileinside.cloud/v1',
+        }
+      : {
+          subdomain: isLocal
+            ? 'local'
+            : isStaging
+            ? 'jjvdhpoooerochuiusam'
+            : 'fsudktxishllphxeibqs',
+          region: isLocal ? undefined : 'eu-central-1',
+        }),
     // Disable auto signin on share app
     autoSignIn: !isShareApp,
     autoRefreshToken: !isShareApp,
@@ -31,14 +43,24 @@ export default {
 
   functionsUrl: isLocal
     ? 'https://local.functions.nhost.run/v1/'
+    : isSelfHost
+    ? 'https://functions.rolebase.agileinside.cloud/v1/'
     : isStaging
     ? 'https://jjvdhpoooerochuiusam.functions.eu-central-1.nhost.run/v1/'
     : 'https://fsudktxishllphxeibqs.functions.eu-central-1.nhost.run/v1/',
 
-  backendUrl: isLocal ? 'http://localhost:8888' : 'https://api.rolebase.io',
+  backendUrl: isLocal
+    ? 'http://localhost:8888'
+    : isSelfHost
+    ? 'https://api.rolebase.agileinside.cloud'
+    : 'https://api.rolebase.io',
 
   yjsCollab: {
-    url: isLocal ? 'ws://localhost:1234' : 'wss://collab.rolebase.io',
+    url: isLocal
+      ? 'ws://localhost:1234'
+      : isSelfHost
+      ? 'wss://collab.rolebase.agileinside.cloud'
+      : 'wss://collab.rolebase.io',
   },
 
   // Files
